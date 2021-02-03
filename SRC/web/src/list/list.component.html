@@ -1,0 +1,142 @@
+<br />
+<div class="d-flex flex-row mt-2">
+  <div class="p-2 d-flex flex-row justify-content-between text-right" style="width: 1280px !important;" [formGroup]="registerForm">
+    <div class="form-inline">
+      <div class="form-group mb-2">
+        <input 
+        type="text"
+        class="form-control mr-2" 
+        bsDatepicker
+        placeholder="Start Date"
+        [value]="registerForm.get('StartDate')"
+        formControlName="StartDate">
+      </div>
+      <div class="form-group mb-2">
+        <input 
+        type="text"
+        class="form-control mr-2" 
+        bsDatepicker
+        placeholder="End Date"
+        [value]="registerForm.get('EndDate')"
+        formControlName="EndDate">
+      </div>
+      <div class="form-group mb-2">
+        <button class="btn btn btn-primary mr-2" (click)="FilterBankTransactions()">
+          Filter Date
+        </button>
+      </div>
+    </div>
+    <div class="form-inline text-right">
+      <div class="form-group mb-2">
+        <button class="btn btn btn-success mr-2" (click)="exportToCsv()">
+          Export CSV 
+          <i class="far fa-file-excel"></i>
+        </button>
+      </div>
+      <div class="form-group mb-2">
+        <button class="btn btn btn-warning mr-2" (click)="openModal(modal)">
+          Import OFX 
+          <i class="fa fa-upload"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<table class="table table-striped mt-3">
+  <thead class="thead-light">
+    <tr>
+      <th>
+        Bank
+      </th>
+      <th>
+        Account Number
+      </th>
+      <th>
+        Account Type
+      </th>
+      <th>
+        Transaction Date
+      </th>
+      <th>
+        Transaction Type
+      </th>
+      <th>
+        Amount
+      </th>
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+  <tbody *ngIf="bankTransactions && bankTransactions.length">
+    <tr *ngFor="let t of bankTransactions |  
+      paginate: {id: 'PaginationTransactions', itemsPerPage: 10, currentPage: config.currentPage, totalItems: config.totalItems}; 
+      let i = index">
+      <td>{{ t.bank }}</td>
+      <td>{{ t.account_number }}</td>
+      <td>{{ t.account_type }}</td>
+      <td>{{ t.transaction_date | date: 'MM/dd/yyyy hh:mm'}} </td>
+      <td>{{ t.transaction_type }}</td>
+      <td>$ {{ t.amount | number:'1.2-2'}}</td>
+      <td>{{ t.description }}</td>
+    </tr>
+  </tbody>
+  <tfoot *ngIf="!(bankTransactions.length)">
+    <tr>
+      <td colspan="7" class="text-center">
+        <h4>No results!</h4>
+      </td>
+    </tr>
+  </tfoot>
+</table>
+
+<div *ngIf="(bankTransactions.length)" class="d-flex flex-row justify-content-between text-right form-inline">
+  <div class="form-group mb-3">
+    <select class='select-option'
+        #mySelect
+        (change)='itemsPerPage(mySelect.value)'>
+      <option class='option' [value]="5">5</option>
+      <option class='option' [value]="10">10</option>
+      <option class='option' [value]="25">25</option>
+    </select> 
+  </div>
+  <div>
+    <pagination-controls 
+      id="PaginationTransactions"
+      (pageChange)="pageChanged($event)"
+      previousLabel="Previous"
+      nextLabel="Next"></pagination-controls>
+  </div>
+</div>
+<br />
+
+<div bsModal #modal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="dialog-sizes-name1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+          <h4 class="modal-title pull-left">
+            Choose OFX file
+          </h4>
+          <button type="button" class="close pull-right" (click)="closeModal(modal)" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="file-loading">
+            <input type="file" (change)="inputOfxChange($event)" multiple>
+        </div>
+
+      </div>    
+      <div class="modal-footer btn-group d-flex">      
+          <button type="button" class="btn btn-outline-danger" (click)="closeModal(modal)">
+            CANCEL
+          </button>
+          <button type="button" class="btn btn-outline-success" (click)="importOFX(modal)">
+            CONFIRM
+          </button>
+      </div>
+    </div>
+ </div>
+</div>
